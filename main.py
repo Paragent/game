@@ -20,7 +20,7 @@ def init_game():
     player = Player(400, 300, 52, 80)
     enemies = [Enemy(100, 200, 52, 80, player), Enemy(500, 500, 52, 80, player)]
 
-    new_font = pygame.font.Font(font_path, 36)
+
 
 
 def ui_render():
@@ -54,40 +54,64 @@ def show_start_menu(screen):
 
 
 def game(screen):
-    display.fill((0, 0, 0))
+    in_start_menu = False
     paused = False
     pause_menu = Menu(["Continue", "Exit"])
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:  # Pause the game when the 'Escape' key is pressed
-                    paused = not paused
+                pygame.quit()
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-            pygame.quit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
-            btn = pygame.mouse.get_pressed()
-            player.attack(enemies, pos, btn)
+            if not paused and not in_start_menu:  # Only handle events when the game is not paused and not in the start menu
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = pygame.mouse.get_pos()
+                    btn = pygame.mouse.get_pressed()
+                    player.attack(enemies, pos, btn)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:  # Pause the game when the 'Escape' key is pressed
+                        paused = True
+            elif in_start_menu:  # Handle events when in the start menu
+                # Additional code to handle events in the start menu (if needed)
+                pass
+            else:  # Handle events for the pause menu when the game is paused
+                option = pause_menu.handle_event(event)
+                if option == "Continue":
+                    paused = False
+                elif option == "Exit":
+                    in_start_menu = True  # Set the flag to return to the start menu
+                    paused = False
 
-    ui_render()
-    key_listener(pygame.key.get_pressed(), player)
+        if not in_start_menu:
+            if not paused:
+                # Clear the screen before updating game entities
+                display.fill((0, 0, 0))
 
-    # ENTITY
-    player.update(display)
-    for enemy in enemies:
-        enemy.update(display)
-        if enemy.is_dead:
-            enemies.remove(enemy)
+                ui_render()
+                key_listener(pygame.key.get_pressed(), player)
 
-    clock.tick(TICK_RATE)  # fps
-    pygame.display.update()
+                # ENTITY
+                player.update(display)
+                for enemy in enemies:
+                    enemy.update(display)
+                    if enemy.is_dead:
+                        enemies.remove(enemy)
+
+                clock.tick(TICK_RATE)  # fps
+                pygame.display.update()
+            else:
+                # If the game is paused, show the pause menu
+                # Clear the screen before drawing the pause menu
+                display.fill((0, 0, 0))
+
+                # Draw the pause menu items on top of the background
+                pause_menu.draw(display, SCREEN_WIDTH - 50, 50, 30)
+                pygame.display.flip()
+        else:
+            # If in the start menu, show the start menu
+            show_start_menu(display)
+            in_start_menu = False
 
 
 if __name__ == '__main__':

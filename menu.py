@@ -18,7 +18,6 @@ class Menu:
             text_surface = self.font.render(item, True, self.font_color)
             text_rect = text_surface.get_rect(topright=(x, y + index * (self.font_size + padding)))
             if index == self.selected_item_index:
-                # Draw '*' next to the selected item
                 text_surface = self.font.render('*' + item, True, self.font_color)
             surface.blit(text_surface, text_rect)
 
